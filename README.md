@@ -8,6 +8,7 @@
 <ul>
   <li><a href="#overview">🎯 Project Overview</a></li>
   <li><a href="#architecture">🏗️ Architecture</a></li>
+  <li><a href="#ai-model">🧠 Model Development & AI</a></li>
   <li><a href="#tech-stack">⚙️ Technology Stack</a></li>
   <li><a href="#components">📂 Project Components</a></li>
   <li><a href="#getting-started">🚀 Getting Started</a></li>
@@ -35,6 +36,33 @@
 <h2 id="architecture">🏗️ Architecture</h2>
 <p><img src="./screenshots/architecture-diagram.png" alt="System Architecture" width="700"/></p>
 <p><i>Complete pipeline architecture showing data flow from log generation to visualization: [Log Generator] → [Kafka Producer] → [Kafka Topic: logs] → [Spark Streaming + ML Model] → [InfluxDB] → [Grafana Dashboard]</i></p>
+
+---
+
+<h2 id="ai-model">🧠 Model Development & AI</h2>
+<p>The core intelligence of this system lies in a multi-class classifier trained to distinguish between legitimate traffic and various cyber threats. The development process followed a rigorous pipeline:</p>
+
+### 1. Data Preprocessing & Engineering
+To ensure the model handles raw network logs effectively, the following steps were implemented:
+* **Categorical Encoding**: Handled features like `source_ip`, `protocol`, and `location` using `LabelEncoder`. 
+* **Feature Scaling**: Applied `StandardScaler` to numerical fields (`bytes_sent`, `bytes_received`) to prevent feature dominance.
+* **Robustness**: The prediction script includes a mapping strategy to handle "unseen" categorical values in production by mapping them to a default index (-1).
+
+### 2. Model Benchmarking
+We evaluated seven different algorithms to find the optimal balance between inference speed (crucial for streaming) and predictive power:
+
+| Model | Accuracy | F1-Score |
+| :--- | :--- | :--- |
+| **Logistic Regression** | **0.8440** | **0.7726** |
+| **SVM (RBF Kernel)** | **0.8440** | **0.7726** |
+| **Naive Bayes** | 0.8440 | 0.7726 |
+| Random Forest | 0.8430 | 0.7721 |
+| KNN | 0.8370 | 0.7708 |
+| Gradient Boosting | 0.8300 | 0.7674 |
+| Decision Tree | 0.7120 | 0.7216 |
+
+### 3. Serialization & Deployment
+The best-performing model (**Logistic Regression**) was serialized using `joblib` along with the feature scalers and encoders. This allows the **Apache Spark** worker nodes to load a consistent preprocessing environment for real-time inference.
 
 ---
 
@@ -74,11 +102,15 @@
 ---
 
 <h2 id="results">📊 Results</h2>
-<p><b>Machine Learning Performance:</b></p>
+<p><b>Machine Learning Performance (Final Model):</b></p>
 <ul>
-  <li>Best Model: <b>Logistic Regression</b></li>
-  <li>F1 Score: <b>0.77</b></li>
+  <li><b>Best Model</b>: Logistic Regression</li>
+  <li><b>Accuracy</b>: 84.40%</li>
+  <li><b>Precision (Weighted)</b>: 71.23%</li>
+  <li><b>Recall (Weighted)</b>: 84.40%</li>
+  <li><b>F1 Score</b>: 0.7726</li>
 </ul>
+
 <p><b>Grafana Dashboards:</b></p>
 <ul>
   <li>Real-time anomaly detection</li>
